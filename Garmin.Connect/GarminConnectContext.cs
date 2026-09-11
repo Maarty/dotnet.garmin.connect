@@ -104,6 +104,11 @@ public class GarminConnectContext
             return default;
         }
 
+        return await Deserialize<T>(url, response, cancellationToken);
+    }
+
+    public async Task<T> Deserialize<T>(string url, HttpResponseMessage response, CancellationToken cancellationToken = default)
+    {
         var json = await response.Content.ReadAsByteArrayAsync(cancellationToken);
 #if DEBUG
         try
