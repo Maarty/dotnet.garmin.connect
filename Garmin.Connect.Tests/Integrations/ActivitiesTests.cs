@@ -10,8 +10,6 @@ namespace Garmin.Connect.Tests.Integrations;
 [NotInParallel("Garmin Integrations")]
 public class ActivitiesTests
 {
-    private const string ActivityImagePath = "TestData\\activity-image.jpg";
-
     private readonly Lazy<Task<GarminActivity[]>> _lazyActivities =
         new(() => LazyClient.Garmin.Value.GetActivities(2, 1));
 
@@ -69,11 +67,12 @@ public class ActivitiesTests
     [Test]
     public async Task AddImageToActivity_ThenRemoveImageFromActivity_UpdatesActivityImages()
     {
+        var activityImagePath = $"TestData{Path.DirectorySeparatorChar}activity-image.jpg";
         var ct = TestContext.Current!.Execution.CancellationToken;
         var activity = (await _lazyActivities.Value).First();
         var activityBefore = await _garmin.GetActivityExerciseSets(activity.ActivityId, ct);
         var previousImageIds = activityBefore.MetadataDto.ActivityImages.Select(x => x.ImageId).ToArray();
-        var imagePath = Path.Combine(AppContext.BaseDirectory, ActivityImagePath);
+        var imagePath = Path.Combine(AppContext.BaseDirectory, activityImagePath);
         var filename = Path.GetFileName(imagePath);
 
         await Assert.That(File.Exists(imagePath)).IsTrue().Because($"Put a real test image at '{imagePath}'.");

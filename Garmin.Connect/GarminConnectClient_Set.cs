@@ -70,6 +70,11 @@ public partial class GarminConnectClient
 
         ArgumentNullException.ThrowIfNull(imageStream);
 
+        if (string.IsNullOrWhiteSpace(filename))
+        {
+            throw new ArgumentException("Filename must be provided");
+        }
+
         var imageUrl = $"{ActivityUrl}{activityId}/image";
         using var buffer = new MemoryStream();
         await imageStream.CopyToAsync(buffer, cancellationToken);
@@ -302,6 +307,16 @@ public partial class GarminConnectClient
 
     public async Task<GarminGear> LinkActivityGear(long activityId, string gearUid, CancellationToken cancellationToken = default)
     {
+        if (activityId == 0)
+        {
+            throw new ArgumentException("ActivityId must be from existing activity");
+        }
+
+        if (string.IsNullOrWhiteSpace(gearUid))
+        {
+            throw new ArgumentException("GearUid must be provided");
+        }
+
         var linkActivityGearUrl = $"{GearUrl}link/{gearUid}/activity/{activityId}";
 
         using var response = await _context.MakeHttpRequest(linkActivityGearUrl, HttpMethod.Put, null, () => null, cancellationToken);
@@ -311,6 +326,16 @@ public partial class GarminConnectClient
 
     public async Task<GarminGear> UnlinkActivityGear(long activityId, string gearUid, CancellationToken cancellationToken = default)
     {
+        if (activityId == 0)
+        {
+            throw new ArgumentException("ActivityId must be from existing activity");
+        }
+
+        if (string.IsNullOrWhiteSpace(gearUid))
+        {
+            throw new ArgumentException("GearUid must be provided");
+        }
+
         var unlinkActivityGearUrl = $"{GearUrl}unlink/{gearUid}/activity/{activityId}";
 
         using var response = await _context.MakeHttpRequest(unlinkActivityGearUrl, HttpMethod.Put, null, () => null, cancellationToken);
