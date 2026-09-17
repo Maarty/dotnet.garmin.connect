@@ -17,9 +17,15 @@ public record GarminUpdateActivity
 
     [JsonPropertyName("activityTypeDTO")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public ActivityType ActivityType { get; init; }
+    public UpdateActivityType ActivityType { get; init; }
 
     [JsonPropertyName("accessControlRuleDTO")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public AccessControlRuleDto AccessControlRuleDto { get; init; }
+}
+
+public record UpdateActivityType
+{
+    [JsonPropertyName("typeKey")]
+    public string TypeKey { get; init; }
 }

@@ -39,29 +39,43 @@ public class ActivitiesTests
     public async Task UpdateActivityDescription()
     {
         var ct = TestContext.Current!.Execution.CancellationToken;
-        var expectedNameSuffix = Guid.NewGuid().ToString()[..6];
+        var expectedSuffix = Guid.NewGuid().ToString()[..6];
         var activity = (await _lazyActivities.Value).First();
 
-        var originalName = activity.Description ?? string.Empty;
-        var expectedName = originalName + expectedNameSuffix;
+        var originalDescription = activity.Description ?? string.Empty;
+        var expectedDescription = originalDescription + expectedSuffix;
+        var descriptionChanged = false;
 
         var updateActivity = new GarminUpdateActivity()
         {
             ActivityId = activity.ActivityId,
-            Description = expectedName
+            Description = expectedDescription
         };
 
-        await _garmin.UpdateActivity(updateActivity, ct);
-        var updatedActivity = await _garmin.GetActivityExerciseSets(activity.ActivityId, ct);
+        var restoreActivity = updateActivity with { Description = originalDescription };
 
-        await Assert.That(updatedActivity.Description)
-            .IsEqualTo(expectedName);
+        try
+        {
+            await _garmin.UpdateActivity(updateActivity, ct);
+            descriptionChanged = true;
+            var updatedActivity = await _garmin.GetActivityExerciseSets(activity.ActivityId, ct);
 
-        await _garmin.UpdateActivity(updateActivity with { Description = originalName }, ct);
-        updatedActivity = await _garmin.GetActivityExerciseSets(activity.ActivityId, ct);
+            await Assert.That(updatedActivity.Description)
+                .IsEqualTo(expectedDescription);
 
-        await Assert.That(updatedActivity.Description)
-            .IsEqualTo(originalName);
+            await _garmin.UpdateActivity(updateActivity with { Description = originalDescription }, ct);
+            updatedActivity = await _garmin.GetActivityExerciseSets(activity.ActivityId, ct);
+            descriptionChanged = false;
+
+            await Assert.That(updatedActivity.Description ?? string.Empty).IsEqualTo(originalDescription);
+        }
+        finally
+        {
+            if (descriptionChanged)
+            {
+                await _garmin.UpdateActivity(restoreActivity, ct);
+            }
+        }
     }
 
     [Test]
@@ -184,7 +198,7 @@ public class ActivitiesTests
     public async Task DeleteActivity_ThenGetActivityExerciseSets_Throws()
     {
         var ct = TestContext.Current!.Execution.CancellationToken;
-        var activityId = 0;
+        long activityId = 0;
 
         await Assert.That(activityId).IsNotEqualTo(0).Because("Set a known activity ID before running this test.");
 
