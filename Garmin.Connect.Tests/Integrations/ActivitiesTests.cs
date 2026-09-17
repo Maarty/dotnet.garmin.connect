@@ -162,9 +162,9 @@ public class ActivitiesTests
         }
         finally
         {
-            if (!gearUnlinked && linkedGear is not null)
+            if (!gearUnlinked)
             {
-                await _garmin.UnlinkActivityGear(activity.ActivityId, linkedGear.Uuid, ct);
+                await _garmin.UnlinkActivityGear(activity.ActivityId, gearToLink!.Uuid, ct);
             }
         }
     }
